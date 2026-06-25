@@ -761,123 +761,144 @@ function getProjectView(viewId, userPermission) {
 function setProject(prjcontent) {
     return new Promise(function (resolve, reject) {
         try {
-            prjstorage.clearAll().then(result => {
-                var scs = [];
-                Object.keys(prjcontent).forEach((key) => {
-                    if (key === 'devices') {
-                        // devices
-                        var devices = prjcontent[key];
-                        if (devices) {
-                            Object.values(prjcontent[key]).forEach((device) => {
-                                scs.push({ table: prjstorage.TableType.DEVICES, name: device.id, value: device });
-                            });
-                        }
-                    } else if (key === 'hmi') {
-                        // hmi
-                        var hmi = prjcontent[key];
-                        if (hmi) {
-                            Object.keys(hmi).forEach((hk) => {
-                                if (hk === 'views') {
-                                    // views
-                                    if (hmi[hk] && hmi[hk].length > 0) {
-                                        for (var i = 0; i < hmi[hk].length; i++) {
-                                            var view = hmi[hk][i];
-                                            scs.push({ table: prjstorage.TableType.VIEWS, name: view.id, value: view });
-                                        }
-                                    }
-                                } else if (hk === 'folders') {
-                                    // folders
-                                    if (hmi[hk] && hmi[hk].length > 0) {
-                                        for (var i = 0; i < hmi[hk].length; i++) {
-                                            var folder = hmi[hk][i];
-                                            scs.push({ table: prjstorage.TableType.FOLDERS, name: folder.id, value: folder });
-                                        }
-                                    }
-                                } else {
-                                    // layout
-                                    scs.push({ table: prjstorage.TableType.GENERAL, name: hk, value: hmi[hk] });
-                                }
-                            });
-                        }
-                    } else if (key === 'server') {
-                        // server
-                        scs.push({ table: prjstorage.TableType.DEVICES, name: key, value: prjcontent[key] });
-                    } else if (key === 'texts') {
-                        // texts
-                        var texts = prjcontent[key];
-                        if (texts && texts.length) {
-                            for (var i = 0; i < texts.length; i++) {
-                                scs.push({ table: prjstorage.TableType.TEXTS, name: texts[i].name, value: texts[i] });
-                            }
-                        }
-                    } else if (key === 'alarms') {
-                        // alarms
-                        var alarms = prjcontent[key];
-                        if (alarms && alarms.length) {
-                            for (var i = 0; i < alarms.length; i++) {
-                                scs.push({ table: prjstorage.TableType.ALARMS, name: alarms[i].name, value: alarms[i] });
-                            }
-                        }
-                    } else if (key === 'notifications') {
-                        // notifications
-                        var notifications = prjcontent[key];
-                        if (notifications && notifications.length) {
-                            for (var i = 0; i < notifications.length; i++) {
-                                scs.push({ table: prjstorage.TableType.NOTIFICATIONS, name: notifications[i].id, value: notifications[i] });
-                            }
-                        }
-                    } else if (key === 'scripts') {
-                        // scripts
-                        var scripts = prjcontent[key];
-                        if (scripts && scripts.length) {
-                            for (var i = 0; i < scripts.length; i++) {
-                                scs.push({ table: prjstorage.TableType.SCRIPTS, name: scripts[i].id, value: scripts[i] });
-                            }
-                        }
-                    } else if (key === 'reports') {
-                        // reports
-                        var reports = prjcontent[key];
-                        if (reports && reports.length) {
-                            for (var i = 0; i < reports.length; i++) {
-                                scs.push({ table: prjstorage.TableType.REPORTS, name: reports[i].id, value: reports[i] });
-                            }
-                        }
-                    } else if (key === 'mapsLocations') {
-                        var locations = prjcontent[key];
-                        if (locations && locations.length) {
-                            for (var i = 0; i < locations.length; i++) {
-                                scs.push({ table: prjstorage.TableType.LOCATIONS, name: locations[i].id, value: locations[i] });
-                            }
-                        }
-                    } else if (key === 'ar') {
-                        var arSettings = Object.assign({}, prjcontent[key]);
-                        var markers = arSettings.markers || [];
-                        delete arSettings.markers;
-                        scs.push({ table: prjstorage.TableType.GENERAL, name: key, value: arSettings });
-                        if (markers && markers.length) {
-                            for (var i = 0; i < markers.length; i++) {
-                                scs.push({ table: prjstorage.TableType.ARMARKERS, name: markers[i].id, value: markers[i] });
-                            }
-                        }
-                    } else {
-                        // charts, graphs, version
-                        scs.push({ table: prjstorage.TableType.GENERAL, name: key, value: prjcontent[key] });
+            if (!prjcontent || !prjcontent.hmi || !prjcontent.devices) {
+                reject('project.invalid-content');
+                return;
+            }
+            var scs = [];
+            Object.keys(prjcontent).forEach((key) => {
+                if (key === 'devices') {
+                    // devices
+                    var devices = prjcontent[key];
+                    if (devices) {
+                        Object.values(prjcontent[key]).forEach((device) => {
+                            scs.push({ table: prjstorage.TableType.DEVICES, name: device.id, value: device });
+                        });
                     }
-                });
-                prjstorage.setSections(scs).then(() => {
-                    logger.info(`project.prjstorage.set-project successfull!`, true);
-                    resolve(true);
-                }).catch(function (err) {
-                    reject(err);
-                });
+                } else if (key === 'hmi') {
+                    // hmi
+                    var hmi = prjcontent[key];
+                    if (hmi) {
+                        Object.keys(hmi).forEach((hk) => {
+                            if (hk === 'views') {
+                                // views
+                                if (hmi[hk] && hmi[hk].length > 0) {
+                                    for (var i = 0; i < hmi[hk].length; i++) {
+                                        var view = _getFullViewForSave(hmi[hk][i]);
+                                        hmi[hk][i] = view;
+                                        scs.push({ table: prjstorage.TableType.VIEWS, name: view.id, value: view });
+                                    }
+                                }
+                            } else if (hk === 'folders') {
+                                // folders
+                                if (hmi[hk] && hmi[hk].length > 0) {
+                                    for (var i = 0; i < hmi[hk].length; i++) {
+                                        var folder = hmi[hk][i];
+                                        scs.push({ table: prjstorage.TableType.FOLDERS, name: folder.id, value: folder });
+                                    }
+                                }
+                            } else {
+                                // layout
+                                scs.push({ table: prjstorage.TableType.GENERAL, name: hk, value: hmi[hk] });
+                            }
+                        });
+                    }
+                } else if (key === 'server') {
+                    // server
+                    scs.push({ table: prjstorage.TableType.DEVICES, name: key, value: prjcontent[key] });
+                } else if (key === 'texts') {
+                    // texts
+                    var texts = prjcontent[key];
+                    if (texts && texts.length) {
+                        for (var i = 0; i < texts.length; i++) {
+                            scs.push({ table: prjstorage.TableType.TEXTS, name: texts[i].name, value: texts[i] });
+                        }
+                    }
+                } else if (key === 'alarms') {
+                    // alarms
+                    var alarms = prjcontent[key];
+                    if (alarms && alarms.length) {
+                        for (var i = 0; i < alarms.length; i++) {
+                            scs.push({ table: prjstorage.TableType.ALARMS, name: alarms[i].name, value: alarms[i] });
+                        }
+                    }
+                } else if (key === 'notifications') {
+                    // notifications
+                    var notifications = prjcontent[key];
+                    if (notifications && notifications.length) {
+                        for (var i = 0; i < notifications.length; i++) {
+                            scs.push({ table: prjstorage.TableType.NOTIFICATIONS, name: notifications[i].id, value: notifications[i] });
+                        }
+                    }
+                } else if (key === 'scripts') {
+                    // scripts
+                    var scripts = prjcontent[key];
+                    if (scripts && scripts.length) {
+                        for (var i = 0; i < scripts.length; i++) {
+                            scs.push({ table: prjstorage.TableType.SCRIPTS, name: scripts[i].id, value: scripts[i] });
+                        }
+                    }
+                } else if (key === 'reports') {
+                    // reports
+                    var reports = prjcontent[key];
+                    if (reports && reports.length) {
+                        for (var i = 0; i < reports.length; i++) {
+                            scs.push({ table: prjstorage.TableType.REPORTS, name: reports[i].id, value: reports[i] });
+                        }
+                    }
+                } else if (key === 'mapsLocations') {
+                    var locations = prjcontent[key];
+                    if (locations && locations.length) {
+                        for (var i = 0; i < locations.length; i++) {
+                            scs.push({ table: prjstorage.TableType.LOCATIONS, name: locations[i].id, value: locations[i] });
+                        }
+                    }
+                } else if (key === 'ar') {
+                    var arSettings = Object.assign({}, prjcontent[key]);
+                    var markers = arSettings.markers || [];
+                    delete arSettings.markers;
+                    scs.push({ table: prjstorage.TableType.GENERAL, name: key, value: arSettings });
+                    if (markers && markers.length) {
+                        for (var i = 0; i < markers.length; i++) {
+                            scs.push({ table: prjstorage.TableType.ARMARKERS, name: markers[i].id, value: markers[i] });
+                        }
+                    }
+                } else {
+                    // charts, graphs, version
+                    scs.push({ table: prjstorage.TableType.GENERAL, name: key, value: prjcontent[key] });
+                }
+            });
+            prjstorage.replaceAllSections(scs).then(() => {
+                data = prjcontent;
+                logger.info(`project.prjstorage.set-project successfull!`, true);
+                resolve(true);
             }).catch(function (err) {
-                logger.error(`project.prjstorage.clear failed! '${err}'`);
                 reject(err);
             });
         } catch (err) {
-            reject();
+            reject(err);
         }
     });
+}
+
+function _getFullViewForSave(view) {
+    if (!view) {
+        return view;
+    }
+    if (!view.lazy && typeof view.svgcontent !== 'undefined' && typeof view.items !== 'undefined') {
+        var savedView = Object.assign({}, view);
+        delete savedView.lazy;
+        return savedView;
+    }
+    var fullView = data?.hmi?.views?.find(item => item.id === view.id || item.name === view.name);
+    if (!fullView) {
+        var fallbackView = Object.assign({}, view);
+        delete fallbackView.lazy;
+        return fallbackView;
+    }
+    var mergedView = Object.assign({}, fullView, view, { svgcontent: fullView.svgcontent, items: fullView.items, variables: fullView.variables });
+    delete mergedView.lazy;
+    return mergedView;
 }
 
 /**

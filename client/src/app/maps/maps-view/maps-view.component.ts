@@ -454,8 +454,8 @@ export class MapsViewComponent implements AfterViewInit, OnDestroy {
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
                 this.projectService.setMapsLocation(result, location).subscribe(() => {
-                    if (!this.locations.find(loc => loc.id === location.id)) {
-                        this.insertLocations(location);
+                    if (!this.locations.find(loc => loc.id === result.id)) {
+                        this.insertLocations(result);
                     } else {
                         this.loadMapsResources();
                     }
@@ -465,7 +465,9 @@ export class MapsViewComponent implements AfterViewInit, OnDestroy {
     }
 
     private insertLocations(location: MapsLocation) {
-        this.locations.push(location);
+        if (!this.locations.find(loc => loc.id === location.id)) {
+            this.locations.push(location);
+        }
         this.view.svgcontent = JSON.stringify(this.locations.map(loc => loc.id));
         this.projectService.setViewAsync(this.view).then(() => {
             this.loadMapsResources();
