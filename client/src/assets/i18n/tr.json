@@ -627,5 +627,14 @@
     "logs.filter": "Filtre",
     "logs.filter-placeholder": "Filtre metni girin...",
     "events.view-user": "Kullanıcı",
-    "events.user-filter-placeholder": "Kullanıcıya göre filtrele..."
+    "events.user-filter-placeholder": "Kullanıcıya göre filtrele...",
+    "shapes.action-moveByTags": "Tag ile taşı",
+    "gauges.property-action-duration": "Süre",
+    "gauges.property-action-tagX": "Konum X tag",
+    "gauges.property-action-tagY": "Konum Y tag",
+    "gauges.property-action-axis": "Eksen",
+    "gauges.property-action-value-min": "Değer min",
+    "gauges.property-action-value-max": "Değer max",
+    "gauges.property-action-position-min": "Konum min",
+    "gauges.property-action-position-max": "Konum max"
 }

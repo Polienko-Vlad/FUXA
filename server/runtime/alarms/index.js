@@ -109,7 +109,7 @@ function AlarmsManager(_runtime) {
                 if (alr.status && alr.type !== AlarmsTypes.ACTION) {
                     var alritem = { name: alr.getId(), type: alr.type, ontime: alr.ontime, offtime: alr.offtime, acktime: alr.acktime,
                         status: alr.status, text: alr.subproperty.text, group: alr.subproperty.group,
-                        bkcolor: alr.subproperty.bkcolor, color: alr.subproperty.color, toack: alr.isToAck() };
+                        bkcolor: alr.subproperty.bkcolor, color: alr.subproperty.color, toack: alr.isToAck(), value: alr.value };
                     var alrPermission = { show: true, enabled: true };
                     if (alr.tagproperty) {
                         alrPermission = runtime.checkPermission(permission, alr.tagproperty);
@@ -162,6 +162,7 @@ function AlarmsManager(_runtime) {
                     alr.acktime = result[i].acktime;
                     alr.userack = result[i].userack;
                     alr.group = result[i].grp;
+                    alr.value = result[i].value;
                     if (alr.ontime) {
                         var alrPermission = { show: true, enabled: true };
                         if (alarmsProperty[alr.name]) {
@@ -366,7 +367,7 @@ function AlarmsManager(_runtime) {
                 if (tag !== null) {
                     groupalarms.forEach(alr => {
                         var value = _checkBitmask(alr, tag.value);
-                        if (alr.check(time, tag.ts, value)) {
+                        if (alr.check(time, tag.ts, value, tag.value)) {
                             changed.push(alr);
                         }
                     });
@@ -907,12 +908,13 @@ function Alarm(name, type, subprop, tagprop) {
     this.lastcheck = 0;
     this.toremove = false;
     this.userack;
+    this.value;
 
     this.getId = function () {
         return this.name + '^~^' + this.type;
     }
 
-    this.check = function (time, dt, value) {
+    this.check = function (time, dt, value, displayValue) {
         if (this.lastcheck + (this.subproperty.checkdelay * TimeMultiplier) > time) {
             return false;
         }
@@ -931,6 +933,7 @@ function Alarm(name, type, subprop, tagprop) {
                 }
                 if (this.ontime + (this.subproperty.timedelay * TimeMultiplier) <= time) {
                     this.status = AlarmStatusEnum.ON;
+                    this.value = displayValue;
                     return true;
                 }
             case AlarmStatusEnum.ON:
@@ -959,6 +962,7 @@ function Alarm(name, type, subprop, tagprop) {
 					this.offtime = 0;
                     this.ontime = time;
                     this.userack = '';
+                    this.value = displayValue;
                     return true;
                 }
                 // remove if acknowledged
@@ -988,6 +992,7 @@ function Alarm(name, type, subprop, tagprop) {
         this.status = AlarmStatusEnum.VOID;
         this.lastcheck = 0;
         this.userack = '';
+        this.value = undefined;
     }
 
     this.toRemove = function () {

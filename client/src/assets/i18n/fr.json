@@ -1636,5 +1636,13 @@
     "logs.filter": "Filtrer",
     "logs.filter-placeholder": "Entrez le texte du filtre...",
     "events.view-user": "Utilisateur",
-    "events.user-filter-placeholder": "Filtrer par utilisateur..."
+    "events.user-filter-placeholder": "Filtrer par utilisateur...",
+    "shapes.action-moveByTags": "Déplacer par tags",
+    "gauges.property-action-tagX": "Tag position X",
+    "gauges.property-action-tagY": "Tag position Y",
+    "gauges.property-action-axis": "Axe",
+    "gauges.property-action-value-min": "Valeur min",
+    "gauges.property-action-value-max": "Valeur max",
+    "gauges.property-action-position-min": "Position min",
+    "gauges.property-action-position-max": "Position max"
 }
