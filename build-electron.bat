@@ -55,7 +55,7 @@ if not exist "app\electron\server\main.js" (
 :: Install server node_modules inside electron copy
 echo Installing server dependencies in app\electron\server...
 cd /d "%ROOT%app\electron\server"
-call npm install --production
+call npm ci --omit=dev
 if %ERRORLEVEL% neq 0 (
     echo ERROR: npm install failed for electron server copy
     exit /b 1
