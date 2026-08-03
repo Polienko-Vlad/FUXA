@@ -42,7 +42,10 @@ function init(_settings, _log) {
  */
 function _bind() {
     return new Promise(function (resolve, reject) {
-        var dbfile = path.join(settings.workDir, 'events.fuxap.db');
+        if (settings.dbDir && !fs.existsSync(settings.dbDir)) {
+            fs.mkdirSync(settings.dbDir, { recursive: true });
+        }
+        var dbfile = path.join(settings.dbDir || settings.workDir, 'events.fuxap.db');
         var dbfileExist = fs.existsSync(dbfile);
 
         db_events = new sqlite3.Database(dbfile, function (err) {
